@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { safeStorage } from '@/utils/storage';
 import * as Speech from 'expo-speech';
 import { translations, Language, TranslationKey } from '@/constants/translations';
 
@@ -25,12 +25,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     // Load persisted settings
     const loadSettings = async () => {
       try {
-        const savedLang = await SecureStore.getItemAsync(LANGUAGE_KEY);
+        const savedLang = await safeStorage.getItem(LANGUAGE_KEY);
         if (savedLang === 'en' || savedLang === 'kn') {
           setLanguageState(savedLang);
         }
         
-        const savedAudio = await SecureStore.getItemAsync(AUDIO_ENABLED_KEY);
+        const savedAudio = await safeStorage.getItem(AUDIO_ENABLED_KEY);
         if (savedAudio !== null) {
           setIsAudioEnabledState(savedAudio === 'true');
         }
@@ -43,12 +43,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = async (lang: Language) => {
     setLanguageState(lang);
-    await SecureStore.setItemAsync(LANGUAGE_KEY, lang);
+    await safeStorage.setItem(LANGUAGE_KEY, lang);
   };
 
   const setIsAudioEnabled = async (enabled: boolean) => {
     setIsAudioEnabledState(enabled);
-    await SecureStore.setItemAsync(AUDIO_ENABLED_KEY, enabled.toString());
+    await safeStorage.setItem(AUDIO_ENABLED_KEY, enabled.toString());
     if (!enabled) {
       Speech.stop();
     }

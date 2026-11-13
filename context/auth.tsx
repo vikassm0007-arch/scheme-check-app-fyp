@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { safeStorage } from '@/utils/storage';
 import { useRouter, useSegments } from 'expo-router';
 import { apiFetch, parseApiResponse } from '@/constants/api';
 
@@ -62,8 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loadStorageData() {
     try {
-      const storedToken = await SecureStore.getItemAsync('userToken');
-      const storedUser = await SecureStore.getItemAsync('userData');
+      const storedToken = await safeStorage.getItem('userToken');
+      const storedUser = await safeStorage.getItem('userData');
 
       if (storedToken && storedUser) {
         setToken(storedToken);
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (newToken: string, newUser: User) => {
     // 1. Save token first so subsequent requests are authorized
-    await SecureStore.setItemAsync('userToken', newToken);
+    await safeStorage.setItem('userToken', newToken);
     setToken(newToken);
     
     try {
@@ -97,19 +97,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Map _id to id for frontend consistency
       const processedUser = { ...data, id: data._id || data.id || newUser.id };
-      await SecureStore.setItemAsync('userData', JSON.stringify(processedUser));
+      await safeStorage.setItem('userData', JSON.stringify(processedUser));
       setUser(processedUser);
     } catch (err) {
       console.log("Network error during user fetch, using fallback:", err);
       // Fallback - VERY IMPORTANT to prevent stuck UI
-      await SecureStore.setItemAsync('userData', JSON.stringify(newUser));
+      await safeStorage.setItem('userData', JSON.stringify(newUser));
       setUser(newUser);
     }
   };
 
   const signOut = async () => {
-    await SecureStore.deleteItemAsync('userToken');
-    await SecureStore.deleteItemAsync('userData');
+    await safeStorage.deleteItem('userToken');
+    await safeStorage.deleteItem('userData');
     setToken(null);
     setUser(null);
   };
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) {
       const updatedUser = { ...user, ...updates };
       setUser(updatedUser);
-      SecureStore.setItemAsync('userData', JSON.stringify(updatedUser));
+      safeStorage.setItem('userData', JSON.stringify(updatedUser));
     }
   };
 

@@ -44,6 +44,8 @@ app-example
 # env files (important)
 .env
 backend/.env
+*.env
+atlas-credentials.env
 # Node modules
 node_modules/
 
